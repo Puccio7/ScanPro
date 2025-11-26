@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
-import { Search, Zap, AlertCircle, RefreshCw, CameraOff, Lock, Check, X, Keyboard } from 'lucide-react';
+import { Search, Zap, AlertCircle, RefreshCw, CameraOff, Lock, Check, X, Keyboard, ZoomIn } from 'lucide-react';
 import { Product } from '../types';
 
 interface ScannerProps {
@@ -20,6 +20,10 @@ const Scanner: React.FC<ScannerProps> = ({ onScan, inventory }) => {
   const [torchOn, setTorchOn] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
+
+  // Zoom State
+  const [zoomCap, setZoomCap] = useState<{min: number, max: number, step: number} | null>(null);
+  const [zoom, setZoom] = useState(1);
   
   // Use a stable unique ID for the reader element
   const regionId = useRef(`reader-${Math.random().toString(36).substr(2, 9)}`).current;
@@ -126,6 +130,8 @@ const Scanner: React.FC<ScannerProps> = ({ onScan, inventory }) => {
         setPermissionError={setPermissionError}
         setInitError={setInitError}
         torchOn={torchOn}
+        setZoomCap={setZoomCap}
+        zoom={zoom}
       />
 
       {/* Main UI Overlay */}
@@ -133,17 +139,11 @@ const Scanner: React.FC<ScannerProps> = ({ onScan, inventory }) => {
         
         {/* TOP BAR */}
         <div className="p-4 pt-safe-top flex justify-between items-start pointer-events-auto bg-gradient-to-b from-black/60 to-transparent pb-12">
-            <button 
-                onClick={() => setManualInputOpen(true)}
-                className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 active:bg-white/20 transition-all"
-            >
-                <Keyboard size={24} />
-            </button>
             
             {cameraReady && (
                 <button 
                     onClick={() => setTorchOn(!torchOn)}
-                    className={`w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md border transition-all ${
+                    className={`ml-auto w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md border transition-all ${
                         torchOn ? 'bg-yellow-400 text-black border-yellow-300' : 'bg-white/10 text-white border-white/20'
                     }`}
                 >
@@ -153,7 +153,19 @@ const Scanner: React.FC<ScannerProps> = ({ onScan, inventory }) => {
         </div>
 
         {/* CENTER SCAN AREA */}
-        <div className="flex-1 flex items-center justify-center relative">
+        <div className="flex-1 flex flex-col items-center justify-start pt-10 relative">
+            
+            {/* Manual Input Trigger (Floating Card) */}
+            <div className="pointer-events-auto mb-8 animate-in fade-in slide-in-from-top-4">
+                 <button 
+                    onClick={() => setManualInputOpen(true)}
+                    className="flex items-center gap-3 bg-black/40 backdrop-blur-md border border-white/20 rounded-full pl-4 pr-6 py-3 text-white/90 hover:bg-black/60 transition-all shadow-lg active:scale-95"
+                 >
+                    <Keyboard size={20} className="text-blue-400" />
+                    <span className="font-medium text-sm">Inserisci a mano...</span>
+                 </button>
+            </div>
+
             {/* The "Box" is always there but dims/lights up */}
             <div className={`w-[280px] h-[280px] rounded-[3rem] border-[4px] transition-all duration-300 relative flex items-center justify-center ${
                 isScanningActive 
@@ -176,6 +188,31 @@ const Scanner: React.FC<ScannerProps> = ({ onScan, inventory }) => {
                     </>
                 )}
             </div>
+
+            {/* ZOOM CONTROLS (Right Side) */}
+            {cameraReady && zoomCap && (
+                <div className="absolute right-4 top-1/2 translate-y-8 pointer-events-auto flex flex-col items-center gap-2">
+                    <div className="bg-black/40 backdrop-blur-md rounded-full py-4 px-1.5 border border-white/10 flex flex-col items-center">
+                         <span className="text-[10px] font-bold mb-2 opacity-80">{zoomCap.max}x</span>
+                         {/* Vertical Slider Wrapper */}
+                         <div className="h-40 w-6 flex items-center justify-center relative">
+                             <input 
+                                type="range" 
+                                min={zoomCap.min} 
+                                max={zoomCap.max} 
+                                step={zoomCap.step} 
+                                value={zoom} 
+                                onChange={(e) => setZoom(Number(e.target.value))}
+                                className="absolute w-40 h-6 -rotate-90 origin-center appearance-none bg-transparent cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-1 [&::-webkit-slider-runnable-track]:bg-white/30 [&::-webkit-slider-runnable-track]:rounded-full"
+                             />
+                         </div>
+                         <span className="text-[10px] font-bold mt-2 opacity-80">{zoomCap.min}x</span>
+                    </div>
+                    <div className="bg-black/40 backdrop-blur-md px-2 py-1 rounded-md text-xs font-bold border border-white/10">
+                        {zoom.toFixed(1)}x
+                    </div>
+                </div>
+            )}
         </div>
 
         {/* BOTTOM CONTROLS */}
@@ -203,15 +240,15 @@ const Scanner: React.FC<ScannerProps> = ({ onScan, inventory }) => {
       {/* MANUAL INPUT MODAL */}
       {manualInputOpen && (
           <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-md flex items-start justify-center pt-24 px-6 animate-in fade-in">
-              <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative">
+              <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl p-6 shadow-2xl relative border border-white/20">
                   <button 
                     onClick={() => setManualInputOpen(false)}
-                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-800"
+                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 dark:hover:text-white"
                   >
                       <X size={24} />
                   </button>
-                  <h3 className="text-xl font-bold text-slate-800 mb-1">Inserimento Manuale</h3>
-                  <p className="text-gray-500 text-sm mb-6">Digita il codice articolo o EAN</p>
+                  <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-1">Inserimento Manuale</h3>
+                  <p className="text-gray-500 dark:text-slate-400 text-sm mb-6">Digita il codice articolo o EAN</p>
                   
                   <form onSubmit={handleManualSubmit}>
                       <div className="relative mb-6">
@@ -221,7 +258,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScan, inventory }) => {
                             type="text"
                             value={manualCode}
                             onChange={e => setManualCode(e.target.value)}
-                            className="w-full bg-gray-100 border-2 border-transparent focus:bg-white focus:border-blue-600 rounded-xl py-3 pl-12 pr-4 text-lg font-mono outline-none text-slate-900 transition-all"
+                            className="w-full bg-gray-100 dark:bg-slate-800 border-2 border-transparent focus:bg-white dark:focus:bg-slate-950 focus:border-blue-600 rounded-xl py-3 pl-12 pr-4 text-lg font-mono outline-none text-slate-900 dark:text-white transition-all"
                             placeholder="Codice..."
                           />
                       </div>
@@ -287,7 +324,11 @@ const Scanner: React.FC<ScannerProps> = ({ onScan, inventory }) => {
 };
 
 // Separated Engine to handle the weird html5-qrcode lifecycle without re-rendering the whole UI
-const ScannerEngine = ({ regionId, activeRef, onCodeFound, setCameraReady, setPermissionError, setInitError, torchOn }: any) => {
+const ScannerEngine = ({ 
+    regionId, activeRef, onCodeFound, setCameraReady, 
+    setPermissionError, setInitError, torchOn, 
+    setZoomCap, zoom 
+}: any) => {
     const scannerRef = useRef<Html5Qrcode | null>(null);
 
     useEffect(() => {
@@ -310,6 +351,31 @@ const ScannerEngine = ({ regionId, activeRef, onCodeFound, setCameraReady, setPe
             () => {}
         ).then(() => {
             setCameraReady(true);
+            
+            // Check Capabilities for ZOOM after a small delay to ensure stream is active
+            setTimeout(() => {
+                try {
+                    // Try to access the video element created by html5-qrcode
+                    const videoElement = document.querySelector(`#${regionId} video`) as HTMLVideoElement;
+                    if (videoElement && videoElement.srcObject) {
+                        const stream = videoElement.srcObject as MediaStream;
+                        const track = stream.getVideoTracks()[0];
+                        const caps = (track.getCapabilities ? track.getCapabilities() : {}) as any;
+                        
+                        // If zoom is supported
+                        if (caps.zoom) {
+                            setZoomCap({
+                                min: caps.zoom.min,
+                                max: caps.zoom.max,
+                                step: caps.zoom.step
+                            });
+                        }
+                    }
+                } catch (e) {
+                    console.debug("Capability check failed", e);
+                }
+            }, 500);
+
         }).catch((err: any) => {
             const msg = err?.message || "";
             if (!msg.includes("play")) {
@@ -340,7 +406,7 @@ const ScannerEngine = ({ regionId, activeRef, onCodeFound, setCameraReady, setPe
         };
     }, []);
 
-    // Handle Torch Toggle separately
+    // Handle Torch
     useEffect(() => {
         if (scannerRef.current) {
             try {
@@ -350,6 +416,17 @@ const ScannerEngine = ({ regionId, activeRef, onCodeFound, setCameraReady, setPe
             } catch(e) {}
         }
     }, [torchOn]);
+
+    // Handle Zoom
+    useEffect(() => {
+        if (scannerRef.current && zoom) {
+             try {
+                scannerRef.current.applyVideoConstraints({
+                    advanced: [{ zoom: zoom }]
+                } as any).catch(e => console.debug(e));
+             } catch(e) {}
+        }
+    }, [zoom]);
 
     return <div id={regionId} className="w-full h-full object-cover bg-black" />;
 };

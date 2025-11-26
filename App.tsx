@@ -18,6 +18,30 @@ const App = () => {
   const [dbStatus, setDbStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
+  // Theme State
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('theme');
+        if (saved === 'dark' || saved === 'light') return saved;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return 'light';
+  });
+
+  // Apply Theme
+  useEffect(() => {
+    if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+      setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
+
   useEffect(() => {
       const handler = (e: any) => { e.preventDefault(); setDeferredPrompt(e); };
       window.addEventListener('beforeinstallprompt', handler);
@@ -108,21 +132,21 @@ const App = () => {
 
   const cartTotalItems = (Array.from(cart.values()) as CartItem[]).reduce((a, b) => a + b.quantity, 0);
 
-  if (loadingApp) return <div className="h-screen w-full flex flex-col items-center justify-center bg-white"><Loader2 className="w-10 h-10 animate-spin text-blue-600"/></div>;
+  if (loadingApp) return <div className="h-screen w-full flex flex-col items-center justify-center bg-white dark:bg-slate-950"><Loader2 className="w-10 h-10 animate-spin text-blue-600"/></div>;
 
   return (
-    <div className="h-screen w-full flex flex-col bg-white overflow-hidden font-sans">
+    <div className="h-screen w-full flex flex-col bg-white dark:bg-slate-950 overflow-hidden font-sans transition-colors duration-300">
       
       {/* Dynamic Header */}
       {currentView !== AppView.SCANNER && (
-        <div className="bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex items-center gap-4 z-20 safe-area-top sticky top-0">
+        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center gap-4 z-20 safe-area-top sticky top-0 transition-colors duration-300">
            {currentView === AppView.SETTINGS && (
-               <button onClick={() => setCurrentView(AppView.SCANNER)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
-                   <ChevronLeft className="text-slate-800" size={20} />
+               <button onClick={() => setCurrentView(AppView.SCANNER)} className="p-2 bg-gray-100 dark:bg-slate-800 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors">
+                   <ChevronLeft className="text-slate-800 dark:text-white" size={20} />
                </button>
            )}
            <div className="flex-1">
-               <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+               <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                    {currentView === AppView.SETTINGS ? 'Impostazioni' : 'Il tuo Ordine'}
                </h1>
                <div className="flex items-center gap-3 mt-1">
@@ -137,17 +161,25 @@ const App = () => {
                </div>
            </div>
            {currentView !== AppView.SETTINGS && deferredPrompt && (
-               <button onClick={() => deferredPrompt.prompt()} className="bg-slate-900 text-white p-2 rounded-full"><Download size={18}/></button>
+               <button onClick={() => deferredPrompt.prompt()} className="bg-slate-900 dark:bg-blue-600 text-white p-2 rounded-full"><Download size={18}/></button>
            )}
         </div>
       )}
 
       {/* Main Content */}
-      <div className="flex-1 relative overflow-hidden bg-slate-50">
+      <div className="flex-1 relative overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
         {currentView === AppView.SCANNER && <Scanner onScan={handleScan} inventory={inventory} />}
         {currentView === AppView.SETTINGS && (
             <div className="h-full overflow-y-auto">
-                <ImportFile onImport={handleImport} batches={importBatches} onDeleteBatch={handleDeleteBatch} deferredPrompt={deferredPrompt} isOnline={isOnline} />
+                <ImportFile 
+                    onImport={handleImport} 
+                    batches={importBatches} 
+                    onDeleteBatch={handleDeleteBatch} 
+                    deferredPrompt={deferredPrompt} 
+                    isOnline={isOnline} 
+                    theme={theme}
+                    onToggleTheme={toggleTheme}
+                />
             </div>
         )}
         {currentView === AppView.CART && (
@@ -158,20 +190,20 @@ const App = () => {
       {/* Notifications */}
       {notification && (
         <div className="absolute top-20 left-1/2 -translate-x-1/2 z-[60] animate-in fade-in slide-in-from-top-4 w-auto shadow-2xl">
-            <div className="px-6 py-3 rounded-full bg-slate-900 text-white font-bold text-sm shadow-lg flex items-center gap-2">
-                <CheckCircle2 size={16} className="text-green-400" /> {notification.msg}
+            <div className="px-6 py-3 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm shadow-lg flex items-center gap-2">
+                <CheckCircle2 size={16} className="text-green-400 dark:text-green-600" /> {notification.msg}
             </div>
         </div>
       )}
 
       {/* Modern Floating Navigation */}
       <div className="absolute bottom-6 left-6 right-6 z-50">
-        <div className="bg-slate-900/90 backdrop-blur-xl text-white rounded-[2rem] p-2 flex justify-between items-center shadow-2xl shadow-slate-900/20 border border-white/10">
+        <div className="bg-slate-900/90 dark:bg-slate-800/90 backdrop-blur-xl text-white rounded-[2rem] p-2 flex justify-between items-center shadow-2xl shadow-slate-900/20 border border-white/10">
             <NavButton active={currentView === AppView.SETTINGS} onClick={() => setCurrentView(AppView.SETTINGS)} icon={<Settings size={22} />} label="Menu" />
             
             <button 
                 onClick={() => setCurrentView(AppView.SCANNER)}
-                className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center transition-all duration-300 shadow-xl ${currentView === AppView.SCANNER ? 'bg-blue-600 scale-110 -translate-y-4 border-4 border-slate-50' : 'bg-white/10 text-slate-400 hover:bg-white/20'}`}
+                className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center transition-all duration-300 shadow-xl ${currentView === AppView.SCANNER ? 'bg-blue-600 scale-110 -translate-y-4 border-4 border-slate-50 dark:border-slate-900' : 'bg-white/10 text-slate-400 hover:bg-white/20'}`}
             >
                 <Scan size={28} className={currentView === AppView.SCANNER ? 'text-white' : ''} />
             </button>
@@ -182,7 +214,7 @@ const App = () => {
                 icon={
                     <div className="relative">
                         <ShoppingCart size={22} />
-                        {cartTotalItems > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-slate-900">{cartTotalItems}</span>}
+                        {cartTotalItems > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-slate-900 dark:border-slate-800">{cartTotalItems}</span>}
                     </div>
                 } 
                 label="Ordine" 
