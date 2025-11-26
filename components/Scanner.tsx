@@ -137,37 +137,36 @@ const Scanner: React.FC<ScannerProps> = ({ onScan, inventory }) => {
       {/* Main UI Overlay */}
       <div className="absolute inset-0 z-20 flex flex-col justify-between pointer-events-none">
         
-        {/* TOP BAR */}
-        <div className="p-4 pt-safe-top flex justify-between items-start pointer-events-auto bg-gradient-to-b from-black/60 to-transparent pb-12">
-            
+        {/* TOP BAR - Manual Input & Torch */}
+        <div className="p-4 pt-safe-top flex justify-between items-start pointer-events-auto pb-6">
+             {/* Manual Input Trigger (Floating Card) */}
+            <div className="pointer-events-auto animate-in fade-in slide-in-from-top-4">
+                 <button 
+                    onClick={() => setManualInputOpen(true)}
+                    className="flex items-center gap-2 bg-black/40 backdrop-blur-md border border-white/20 rounded-full pl-3 pr-5 py-2.5 text-white/90 hover:bg-black/60 transition-all shadow-lg active:scale-95"
+                 >
+                    <Keyboard size={18} className="text-blue-400" />
+                    <span className="font-medium text-xs uppercase tracking-wide">Manuale</span>
+                 </button>
+            </div>
+
             {cameraReady && (
                 <button 
                     onClick={() => setTorchOn(!torchOn)}
-                    className={`ml-auto w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md border transition-all ${
-                        torchOn ? 'bg-yellow-400 text-black border-yellow-300' : 'bg-white/10 text-white border-white/20'
+                    className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md border transition-all shadow-lg ${
+                        torchOn ? 'bg-yellow-400 text-black border-yellow-300' : 'bg-black/40 text-white border-white/20'
                     }`}
                 >
-                    <Zap size={24} fill={torchOn ? "currentColor" : "none"} />
+                    <Zap size={20} fill={torchOn ? "currentColor" : "none"} />
                 </button>
             )}
         </div>
 
         {/* CENTER SCAN AREA */}
-        <div className="flex-1 flex flex-col items-center justify-start pt-10 relative">
+        <div className="flex-1 flex flex-col items-center justify-center relative">
             
-            {/* Manual Input Trigger (Floating Card) */}
-            <div className="pointer-events-auto mb-8 animate-in fade-in slide-in-from-top-4">
-                 <button 
-                    onClick={() => setManualInputOpen(true)}
-                    className="flex items-center gap-3 bg-black/40 backdrop-blur-md border border-white/20 rounded-full pl-4 pr-6 py-3 text-white/90 hover:bg-black/60 transition-all shadow-lg active:scale-95"
-                 >
-                    <Keyboard size={20} className="text-blue-400" />
-                    <span className="font-medium text-sm">Inserisci a mano...</span>
-                 </button>
-            </div>
-
             {/* The "Box" is always there but dims/lights up */}
-            <div className={`w-[280px] h-[280px] rounded-[3rem] border-[4px] transition-all duration-300 relative flex items-center justify-center ${
+            <div className={`w-[280px] h-[280px] rounded-[2.5rem] border-[4px] transition-all duration-300 relative flex items-center justify-center ${
                 isScanningActive 
                 ? 'border-blue-400 shadow-[0_0_0_9999px_rgba(0,0,0,0.7)]' // Darken outside when active
                 : 'border-white/30 shadow-[0_0_0_9999px_rgba(0,0,0,0.2)]' // Lighter overlay when idle
@@ -176,14 +175,15 @@ const Scanner: React.FC<ScannerProps> = ({ onScan, inventory }) => {
                 {/* Idle Text */}
                 {!isScanningActive && (
                     <div className="text-white/70 text-center px-6 animate-in fade-in">
-                        <p className="text-sm font-medium tracking-wide">PRONTO</p>
+                        <p className="text-xs font-bold tracking-widest uppercase mb-1">Pronto</p>
+                        <p className="text-[10px] opacity-70">Premi il tasto in basso</p>
                     </div>
                 )}
 
                 {/* Active Laser */}
                 {isScanningActive && (
                     <>
-                        <div className="absolute inset-0 rounded-[2.5rem] border border-blue-500/50 animate-pulse"></div>
+                        <div className="absolute inset-0 rounded-[2.2rem] border border-blue-500/50 animate-pulse"></div>
                         <div className="absolute left-4 right-4 h-0.5 bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,1)] animate-scan"></div>
                     </>
                 )}
@@ -191,11 +191,11 @@ const Scanner: React.FC<ScannerProps> = ({ onScan, inventory }) => {
 
             {/* ZOOM CONTROLS (Right Side) */}
             {cameraReady && zoomCap && (
-                <div className="absolute right-4 top-1/2 translate-y-8 pointer-events-auto flex flex-col items-center gap-2">
-                    <div className="bg-black/40 backdrop-blur-md rounded-full py-4 px-1.5 border border-white/10 flex flex-col items-center">
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-auto flex flex-col items-center gap-2">
+                    <div className="bg-black/40 backdrop-blur-md rounded-full py-4 px-1.5 border border-white/10 flex flex-col items-center shadow-lg">
                          <span className="text-[10px] font-bold mb-2 opacity-80">{zoomCap.max}x</span>
                          {/* Vertical Slider Wrapper */}
-                         <div className="h-40 w-6 flex items-center justify-center relative">
+                         <div className="h-32 w-6 flex items-center justify-center relative">
                              <input 
                                 type="range" 
                                 min={zoomCap.min} 
@@ -203,12 +203,12 @@ const Scanner: React.FC<ScannerProps> = ({ onScan, inventory }) => {
                                 step={zoomCap.step} 
                                 value={zoom} 
                                 onChange={(e) => setZoom(Number(e.target.value))}
-                                className="absolute w-40 h-6 -rotate-90 origin-center appearance-none bg-transparent cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-1 [&::-webkit-slider-runnable-track]:bg-white/30 [&::-webkit-slider-runnable-track]:rounded-full"
+                                className="absolute w-32 h-6 -rotate-90 origin-center appearance-none bg-transparent cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-1 [&::-webkit-slider-runnable-track]:bg-white/30 [&::-webkit-slider-runnable-track]:rounded-full"
                              />
                          </div>
                          <span className="text-[10px] font-bold mt-2 opacity-80">{zoomCap.min}x</span>
                     </div>
-                    <div className="bg-black/40 backdrop-blur-md px-2 py-1 rounded-md text-xs font-bold border border-white/10">
+                    <div className="bg-black/40 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold border border-white/10 shadow-sm">
                         {zoom.toFixed(1)}x
                     </div>
                 </div>
@@ -216,21 +216,21 @@ const Scanner: React.FC<ScannerProps> = ({ onScan, inventory }) => {
         </div>
 
         {/* BOTTOM CONTROLS */}
-        <div className="p-6 pb-32 pointer-events-auto flex justify-center items-center bg-gradient-to-t from-black/80 to-transparent pt-12">
+        <div className="p-6 pb-36 pointer-events-auto flex justify-center items-center bg-gradient-to-t from-black/80 to-transparent pt-12">
             {/* TRIGGER BUTTON */}
             <button 
                 onClick={() => setIsScanningActive(!isScanningActive)}
-                className={`w-24 h-24 rounded-full border-[6px] transition-all duration-200 shadow-2xl flex items-center justify-center active:scale-95 ${
+                className={`w-20 h-20 rounded-full border-[4px] transition-all duration-200 shadow-2xl flex items-center justify-center active:scale-95 ${
                     isScanningActive 
                     ? 'bg-red-500 border-red-200 animate-pulse' 
                     : 'bg-white border-gray-200 hover:bg-gray-100'
                 }`}
             >
                 {isScanningActive ? (
-                    <X size={40} className="text-white" />
+                    <X size={32} className="text-white" />
                 ) : (
-                    <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center shadow-inner">
-                        <div className="w-6 h-6 border-2 border-white rounded-sm"></div>
+                    <div className="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center shadow-inner">
+                        <div className="w-4 h-4 border-2 border-white rounded-sm opacity-50"></div>
                     </div>
                 )}
             </button>
@@ -239,16 +239,16 @@ const Scanner: React.FC<ScannerProps> = ({ onScan, inventory }) => {
 
       {/* MANUAL INPUT MODAL */}
       {manualInputOpen && (
-          <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-md flex items-start justify-center pt-24 px-6 animate-in fade-in">
-              <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl p-6 shadow-2xl relative border border-white/20">
+          <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-md flex items-start justify-center pt-20 px-6 animate-in fade-in">
+              <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative border border-white/20">
                   <button 
                     onClick={() => setManualInputOpen(false)}
                     className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 dark:hover:text-white"
                   >
                       <X size={24} />
                   </button>
-                  <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-1">Inserimento Manuale</h3>
-                  <p className="text-gray-500 dark:text-slate-400 text-sm mb-6">Digita il codice articolo o EAN</p>
+                  <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Inserimento Manuale</h3>
+                  <p className="text-gray-500 dark:text-slate-400 text-xs mb-6">Digita il codice articolo o EAN</p>
                   
                   <form onSubmit={handleManualSubmit}>
                       <div className="relative mb-6">
@@ -265,7 +265,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScan, inventory }) => {
                       <button 
                         type="submit" 
                         disabled={manualCode.length < 2}
-                        className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg disabled:opacity-50 disabled:shadow-none active:scale-95 transition-all"
+                        className="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg disabled:opacity-50 disabled:shadow-none active:scale-95 transition-all"
                       >
                           Cerca e Aggiungi
                       </button>
@@ -276,18 +276,18 @@ const Scanner: React.FC<ScannerProps> = ({ onScan, inventory }) => {
 
       {/* SUCCESS TOAST */}
       {lastScannedItem && (
-        <div className="absolute top-8 left-4 right-4 z-50 animate-in slide-in-from-top-4 duration-300">
-            <div className="bg-white rounded-2xl shadow-2xl p-4 border border-blue-100 flex gap-4 items-center">
-                <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center shrink-0">
-                    <Check size={24} />
+        <div className="absolute top-6 left-4 right-4 z-50 animate-in slide-in-from-top-4 duration-300">
+            <div className="bg-white/95 backdrop-blur shadow-2xl rounded-2xl p-4 border border-blue-100 flex gap-4 items-center">
+                <div className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center shrink-0">
+                    <Check size={20} />
                 </div>
                 <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-slate-900 truncate">{lastScannedItem.description}</h4>
+                    <h4 className="font-bold text-slate-900 text-sm truncate">{lastScannedItem.description}</h4>
                     <div className="flex justify-between items-center mt-1">
-                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-mono">
+                        <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-mono font-bold">
                             {lastScannedItem.code}
                         </span>
-                        <span className="font-bold text-blue-600">
+                        <span className="font-bold text-blue-600 text-sm">
                             € {lastScannedItem.price.toFixed(2)}
                         </span>
                     </div>
@@ -317,6 +317,22 @@ const Scanner: React.FC<ScannerProps> = ({ onScan, inventory }) => {
         }
         .animate-scan {
           animation: scan-line 1.5s ease-in-out infinite;
+        }
+        
+        /* FORCE VIDEO TO FILL CONTAINER & HIDE LIBRARY OVERLAYS */
+        #${regionId} video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            border-radius: 0 !important;
+            display: block !important;
+        }
+        
+        /* THE CRITICAL FIX: Hide the "grey things" (canvas shading & library UI) */
+        #${regionId} canvas, 
+        #${regionId} img, 
+        #${regionId} div[style*="position: absolute"] {
+            display: none !important;
         }
       `}</style>
     </div>
