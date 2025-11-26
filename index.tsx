@@ -17,7 +17,9 @@ root.render(
 // Register Service Worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').then(
+    // CRITICAL FIX: Use relative path './sw.js' instead of absolute '/sw.js'
+    // This allows the app to work in subdirectories (like GitHub Pages /repo-name/)
+    navigator.serviceWorker.register('./sw.js').then(
       (registration) => {
         console.log('SW registered: ', registration);
       },

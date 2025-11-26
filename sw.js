@@ -1,9 +1,9 @@
-
-const CACHE_NAME = 'scanorder-pro-v5';
+const CACHE_NAME = 'scanorder-pro-v6';
+// CRITICAL FIX: All paths must be relative (./) to work on GitHub Pages
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
+  './',
+  './index.html',
+  './manifest.json',
   'https://cdn.tailwindcss.com'
 ];
 
@@ -35,25 +35,28 @@ self.addEventListener('fetch', (event) => {
   const requestUrl = new URL(event.request.url);
 
   // 1. Navigation Fallback (For SPA offline support)
-  // If user navigates to the app while offline, return index.html
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      caches.match('/index.html').then((response) => {
+      // CRITICAL FIX: Look for relative index.html
+      caches.match('./index.html').then((response) => {
         return response || fetch(event.request).catch(() => {
-           return caches.match('/');
+           // Fallback to root relative
+           return caches.match('./');
         });
       })
     );
     return;
   }
 
-  // 2. Asset Caching Strategy (Cache First, Network Fallback)
+  // 2. Asset Caching Strategy
   if (
     requestUrl.hostname.includes('esm.sh') || 
     requestUrl.hostname.includes('aistudiocdn.com') ||
     requestUrl.hostname.includes('cdn.tailwindcss.com') ||
-    requestUrl.hostname.includes('flaticon.com') || // Crucial: Cache icons for offline usage
-    STATIC_ASSETS.includes(requestUrl.pathname)
+    requestUrl.hostname.includes('flaticon.com') || 
+    // Check if the path matches one of our relative assets (ignoring the base domain)
+    requestUrl.pathname.endsWith('index.html') ||
+    requestUrl.pathname.endsWith('manifest.json')
   ) {
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
@@ -61,26 +64,20 @@ self.addEventListener('fetch', (event) => {
           return cachedResponse;
         }
         return fetch(event.request).then((networkResponse) => {
-          // Check for valid response
           if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic' && networkResponse.type !== 'cors') {
             return networkResponse;
           }
-
-          // Clone response to cache it
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseToCache);
           });
-
           return networkResponse;
         }).catch(() => {
-            // Network failed and not in cache
             return new Response('Offline', { status: 503, statusText: 'Offline' });
         });
       })
     );
   } else {
-    // 3. API/Other Strategy (Network Only)
     event.respondWith(fetch(event.request));
   }
 });
