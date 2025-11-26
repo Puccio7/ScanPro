@@ -1,0 +1,7 @@
+{
+  "name": "ScanOrder Pro ",
+  "description": "Applicazione professionale per la gestione ordini tramite scansione codici a barre e importazione listini METEL/CSV.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
