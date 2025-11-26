@@ -1,5 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
+declare const process: any;
+
 // Initialize Gemini
 // Note: In a real production app, ensure the key is restricted or proxied.
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
