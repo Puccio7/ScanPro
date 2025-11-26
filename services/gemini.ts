@@ -1,12 +1,17 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-declare const process: any;
+// Initialize Gemini using Vite's standard env variable access
+const apiKey = import.meta.env.VITE_API_KEY;
 
-// Initialize Gemini
-// Note: In a real production app, ensure the key is restricted or proxied.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Fail gracefully if key is missing (prevents immediate crash, logs error instead)
+const ai = new GoogleGenAI({ apiKey: apiKey || 'MISSING_KEY' });
 
 export const parseUnstructuredData = async (rawText: string): Promise<{ products: any[] }> => {
+  if (!apiKey) {
+      console.error("API Key mancante. Assicurati di aver configurato VITE_API_KEY nel file .env");
+      return { products: [] };
+  }
+
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
@@ -15,7 +20,7 @@ export const parseUnstructuredData = async (rawText: string): Promise<{ products
       Se non trovi un campo, lascialo vuoto o 0.
       
       Dati:
-      ${rawText.substring(0, 3000)}`, // Limit input size for demo
+      ${rawText.substring(0, 3000)}`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -49,6 +54,8 @@ export const parseUnstructuredData = async (rawText: string): Promise<{ products
 };
 
 export const identifyProductByCode = async (code: string): Promise<{ description: string, brand: string, priceEstimate: number }> => {
+  if (!apiKey) return { description: "Chiave API mancante", brand: "Errore", priceEstimate: 0 };
+
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
