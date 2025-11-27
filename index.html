@@ -8,12 +8,17 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="ScanOrder" />
     
-    <!-- Favicon configuration using local icon.png with versioning to bust cache -->
-    <link rel="icon" type="image/png" href="./icon.png?v=2" />
-    <link rel="shortcut icon" href="./icon.png?v=2" />
-    <link rel="apple-touch-icon" href="./icon.png?v=2" />
+    <!-- CRITICAL FIX for Mobile: Polyfill 'process' to prevent "process is not defined" crashes -->
+    <script>
+      window.process = { env: {} };
+    </script>
     
-    <title>ScanOrder Pro</title>
+    <!-- Favicon configuration using local icon.png with versioning to bust cache -->
+    <link rel="icon" type="image/png" href="./icon.png?v=3" />
+    <link rel="shortcut icon" href="./icon.png?v=3" />
+    <link rel="apple-touch-icon" href="./icon.png?v=3" />
+    
+    <title>ScanOrder</title>
     <link rel="manifest" href="./manifest.json" />
     <!-- Tailwind CDN kept for simplicity of migration -->
     <script src="https://cdn.tailwindcss.com"></script>

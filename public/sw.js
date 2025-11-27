@@ -1,4 +1,4 @@
-const CACHE_NAME = 'scanorder-pro-v9';
+const CACHE_NAME = 'scanorder-pro-v10';
 // CRITICAL FIX: All paths must be relative (./) to work on GitHub Pages
 const STATIC_ASSETS = [
   './',
