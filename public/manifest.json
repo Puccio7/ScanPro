@@ -3,13 +3,13 @@
   "name": "ScanOrder Pro Metel",
   "icons": [
     {
-      "src": "./icon.png?v=3",
-      "type": "image/png",
+      "src": "./icon.jpg?v=4",
+      "type": "image/jpeg",
       "sizes": "192x192"
     },
     {
-      "src": "./icon.png?v=3",
-      "type": "image/png",
+      "src": "./icon.jpg?v=4",
+      "type": "image/jpeg",
       "sizes": "512x512"
     }
   ],
