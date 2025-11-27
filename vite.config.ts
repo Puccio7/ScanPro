@@ -6,13 +6,22 @@ export default defineConfig(({ mode }) => {
   // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
   const env = loadEnv(mode, process.cwd(), '');
 
+  // Create a process.env object that includes API_KEY derived from VITE_API_KEY
+  // This is crucial because Vercel/Netlify often use VITE_ prefix, but the SDK code uses API_KEY
+  const processEnvValues = {
+    ...env,
+    API_KEY: env.API_KEY || env.VITE_API_KEY,
+    NODE_ENV: mode
+  };
+
   return {
     // CRITICAL: Base path must be relative for GitHub Pages or subfolder deployment
     base: './',
     plugins: [react()],
     define: {
       // CRITICAL: Polyfill process.env so the Google GenAI SDK works in the browser
-      'process.env': env
+      // We JSON.stringify to ensure it's injected as a code literal object
+      'process.env': JSON.stringify(processEnvValues)
     },
     build: {
       outDir: 'build', // Output folder name for Vercel
