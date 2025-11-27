@@ -18,7 +18,6 @@ const OrderList: React.FC<OrderListProps> = ({ items, onUpdateQuantity, onClear 
   const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
   const totalValue = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
 
-  // ... (Keep existing Export Logic unchanged for brevity, focusing on UI) ...
   const handleExportCSV = () => {
     const header = "Codice;Descrizione;Marca;Quantità;Prezzo Unitario;Totale\n";
     const rows = items.map(item => 
@@ -74,30 +73,14 @@ const OrderList: React.FC<OrderListProps> = ({ items, onUpdateQuantity, onClear 
   return (
     <>
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 relative transition-colors duration-300">
-      {/* Header with Blur */}
-      <div className="sticky top-0 z-10 px-6 pt-6 pb-2 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-md">
-        <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-xl shadow-slate-200/50 dark:shadow-none border border-white dark:border-slate-800">
-             <div className="flex justify-between items-start mb-2">
-                <div>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Totale Ordine</p>
-                    <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">
-                        <span className="text-2xl text-slate-400 font-bold mr-1">€</span>
-                        {totalValue.toFixed(2)}
-                    </h2>
-                </div>
-                <div className="bg-blue-600 text-white px-4 py-2 rounded-2xl text-sm font-bold shadow-lg shadow-blue-200 dark:shadow-none">
-                    {items.length} Articoli
-                </div>
-             </div>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 pb-32">
+      
+      {/* Scrollable List Area */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 pb-64">
         {items.sort((a,b) => b.timestamp - a.timestamp).map((item) => (
             <div 
                 key={item.ean} 
                 onClick={() => setSelectedItem(item)}
-                className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-800 active:scale-[0.98] transition-all"
+                className="bg-white dark:bg-slate-900 rounded-xl p-4 shadow-sm border border-slate-100 dark:border-slate-800 active:scale-[0.98] transition-all"
             >
                 <div className="flex justify-between items-start mb-2">
                      <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wide">
@@ -106,24 +89,24 @@ const OrderList: React.FC<OrderListProps> = ({ items, onUpdateQuantity, onClear 
                     <span className="font-bold text-slate-900 dark:text-white">€ {(item.price * item.quantity).toFixed(2)}</span>
                 </div>
                 
-                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-base leading-snug mb-1">{item.description}</h4>
-                <p className="text-xs text-slate-400 font-mono mb-4">{item.code}</p>
+                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm leading-snug mb-1">{item.description}</h4>
+                <p className="text-xs text-slate-400 font-mono mb-3">{item.code}</p>
 
-                <div className="flex items-center justify-between border-t border-slate-50 dark:border-slate-800 pt-3">
-                    <p className="text-xs text-slate-400">€ {item.price.toFixed(2)} cad.</p>
-                    <div className="flex items-center bg-slate-50 dark:bg-slate-800 rounded-xl p-1 gap-3" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between border-t border-slate-50 dark:border-slate-800 pt-2">
+                    <p className="text-[10px] text-slate-400">€ {item.price.toFixed(2)} cad.</p>
+                    <div className="flex items-center bg-slate-50 dark:bg-slate-800 rounded-lg p-0.5 gap-2" onClick={(e) => e.stopPropagation()}>
                         <button 
                             onClick={(e) => { e.stopPropagation(); onUpdateQuantity(item.ean, -1); }}
-                            className="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-700 rounded-lg shadow-sm text-slate-600 dark:text-white active:bg-slate-100 dark:active:bg-slate-600"
+                            className="w-7 h-7 flex items-center justify-center bg-white dark:bg-slate-700 rounded-md shadow-sm text-slate-600 dark:text-white active:bg-slate-100 dark:active:bg-slate-600"
                         >
-                            {item.quantity === 1 ? <Trash2 size={16} className="text-red-500" /> : <Minus size={16} />}
+                            {item.quantity === 1 ? <Trash2 size={14} className="text-red-500" /> : <Minus size={14} />}
                         </button>
-                        <span className="font-bold text-slate-800 dark:text-white w-4 text-center">{item.quantity}</span>
+                        <span className="font-bold text-slate-800 dark:text-white w-4 text-center text-sm">{item.quantity}</span>
                         <button 
                             onClick={(e) => { e.stopPropagation(); onUpdateQuantity(item.ean, 1); }}
-                            className="w-8 h-8 flex items-center justify-center bg-blue-600 rounded-lg shadow-sm text-white active:bg-blue-700"
+                            className="w-7 h-7 flex items-center justify-center bg-blue-600 rounded-md shadow-sm text-white active:bg-blue-700"
                         >
-                            <Plus size={16} />
+                            <Plus size={14} />
                         </button>
                     </div>
                 </div>
@@ -131,38 +114,56 @@ const OrderList: React.FC<OrderListProps> = ({ items, onUpdateQuantity, onClear 
         ))}
       </div>
 
-      {/* Floating Action Sheet */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 p-6 rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-20 space-y-3 pb-safe-bottom">
-        <button 
-            onClick={handleExportPDF}
-            className="w-full py-4 bg-slate-900 dark:bg-blue-600 text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-xl shadow-slate-300 dark:shadow-none active:scale-[0.98] transition-all"
-        >
-            <FileText size={20} />
-            Scarica PDF
-        </button>
-
-        <div className="grid grid-cols-2 gap-3">
-            <button 
-                onClick={handleShare}
-                className="py-3 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-bold rounded-xl flex items-center justify-center gap-2"
-            >
-                <Share2 size={18} /> Condividi
-            </button>
-            <button 
-                onClick={handleExportMexal}
-                className="py-3 bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 font-bold rounded-xl flex items-center justify-center gap-2"
-            >
-                <FileCode size={18} /> Mexal CSV
-            </button>
+      {/* FIXED BOTTOM FOOTER: Totals & Actions */}
+      <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 z-30 pb-24 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+        
+        {/* Total Row (Small) */}
+        <div className="px-6 py-3 flex justify-between items-center border-b border-slate-100 dark:border-slate-800">
+            <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Totale ({items.length} art.)</span>
+            <span className="text-xl font-bold text-slate-900 dark:text-white">€ {totalValue.toFixed(2)}</span>
         </div>
 
-        <button onClick={() => setShowClearConfirm(true)} className="w-full py-2 text-xs font-bold text-red-400 uppercase tracking-widest">
-            Svuota Tutto
-        </button>
+        {/* Action Buttons Grid */}
+        <div className="p-4 grid grid-cols-4 gap-3">
+             {/* PDF Button (Larger) */}
+            <button 
+                onClick={handleExportPDF}
+                className="col-span-2 py-3 bg-blue-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-200 dark:shadow-none active:scale-[0.98] transition-all"
+            >
+                <FileText size={18} />
+                <span>PDF</span>
+            </button>
+
+             {/* Share Button */}
+            <button 
+                onClick={handleShare}
+                className="col-span-1 py-3 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-bold rounded-xl flex flex-col items-center justify-center gap-1 border border-green-200 dark:border-green-900/50"
+            >
+                <Share2 size={18} />
+            </button>
+
+            {/* Mexal Button */}
+             <button 
+                onClick={handleExportMexal}
+                className="col-span-1 py-3 bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 font-bold rounded-xl flex flex-col items-center justify-center gap-1 border border-orange-200 dark:border-orange-900/50"
+            >
+                <FileCode size={18} />
+            </button>
+            
+            {/* Clear Button (Row 2, Full Width optional, or just an icon) */}
+            <div className="col-span-4 mt-1">
+                 <button 
+                    onClick={() => setShowClearConfirm(true)} 
+                    className="w-full py-2 flex items-center justify-center gap-2 text-xs font-bold text-red-400 hover:text-red-600 uppercase tracking-widest"
+                >
+                    <Trash2 size={14} /> Svuota Carrello
+                </button>
+            </div>
+        </div>
       </div>
     </div>
 
-    {/* Detail Modal (Keep logic, update style to rounded-3xl) */}
+    {/* Detail Modal */}
     {selectedItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setSelectedItem(null)}></div>
@@ -176,7 +177,6 @@ const OrderList: React.FC<OrderListProps> = ({ items, onUpdateQuantity, onClear 
                     <button onClick={() => setSelectedItem(null)} className="p-2 bg-slate-50 dark:bg-slate-800 rounded-full text-slate-400"><X size={20}/></button>
                 </div>
                 
-                {/* Quantity Controls Big */}
                 <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-800 rounded-2xl p-2 mb-6">
                     <button onClick={() => {onUpdateQuantity(selectedItem.ean, -1); setSelectedItem(prev => prev ? {...prev, quantity: prev.quantity-1} : null)}} className="w-14 h-14 bg-white dark:bg-slate-700 shadow-sm rounded-xl flex items-center justify-center text-slate-900 dark:text-white"><Minus/></button>
                     <span className="text-3xl font-bold text-slate-800 dark:text-white">{selectedItem.quantity}</span>
@@ -193,7 +193,7 @@ const OrderList: React.FC<OrderListProps> = ({ items, onUpdateQuantity, onClear 
         </div>
     )}
 
-    {/* Clear Confirm (Updated UI) */}
+    {/* Clear Confirm */}
     {showClearConfirm && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-6">
             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setShowClearConfirm(false)}></div>

@@ -57,23 +57,36 @@ const Scanner: React.FC<ScannerProps> = ({ onScan, inventory }) => {
     
     // Normalize input
     const cleanCode = code.trim();
+    const searchLower = cleanCode.toLowerCase();
 
     playBeep();
     
     // Stop scanning immediately (trigger mode)
     setIsScanningActive(false);
 
-    // 1. Try direct lookup
+    // 1. Try direct lookup (Fastest for EAN/Exact Code)
     let product = inventory.get(cleanCode);
 
-    // 2. Fallback search
+    // 2. Fallback search (Slower but finds manual entries by Code)
     if (!product) {
-         const searchLower = cleanCode.toLowerCase();
          for (const p of inventory.values()) {
-             if (p.ean === cleanCode || 
-                 p.code.toLowerCase() === searchLower || 
-                 p.code.toLowerCase().endsWith(searchLower)
-             ) {
+             // Check 1: EAN Match
+             if (p.ean === cleanCode) {
+                 product = p;
+                 break;
+             }
+             
+             const pCodeLower = p.code.toLowerCase();
+             
+             // Check 2: Code Exact Match (Case Insensitive)
+             if (pCodeLower === searchLower) {
+                 product = p;
+                 break;
+             }
+             
+             // Check 3: Partial Code Match (Useful for manual entry)
+             // Only if input is at least 3 chars to avoid matching everything with "1"
+             if (cleanCode.length >= 3 && pCodeLower.includes(searchLower)) {
                  product = p;
                  break;
              }
@@ -104,7 +117,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScan, inventory }) => {
   // Handle Manual Input Submit
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (manualCode.length > 2) {
+    if (manualCode.length > 1) {
         processCode(manualCode);
         setManualCode('');
         setManualInputOpen(false);

@@ -1,18 +1,10 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-// Initialize Gemini using Vite's standard env variable access with safety check
-// We cast to any to allow safe access if import.meta or env is somehow undefined in the current context
-const apiKey = (import.meta as any)?.env?.VITE_API_KEY || '';
-
-// Fail gracefully if key is missing (prevents immediate crash, logs error instead)
-const ai = new GoogleGenAI({ apiKey: apiKey || 'MISSING_KEY' });
+// Initialize Gemini using process.env.API_KEY exclusively as per coding guidelines.
+// Assume process.env.API_KEY is pre-configured and valid.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const parseUnstructuredData = async (rawText: string): Promise<{ products: any[] }> => {
-  if (!apiKey || apiKey === 'MISSING_KEY') {
-      console.error("API Key mancante. Assicurati di aver configurato VITE_API_KEY nel file .env");
-      return { products: [] };
-  }
-
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
@@ -45,6 +37,7 @@ export const parseUnstructuredData = async (rawText: string): Promise<{ products
       }
     });
 
+    // Use response.text directly as per guidelines
     const jsonText = response.text;
     if (!jsonText) return { products: [] };
     return JSON.parse(jsonText);
@@ -55,8 +48,6 @@ export const parseUnstructuredData = async (rawText: string): Promise<{ products
 };
 
 export const identifyProductByCode = async (code: string): Promise<{ description: string, brand: string, priceEstimate: number }> => {
-  if (!apiKey || apiKey === 'MISSING_KEY') return { description: "Chiave API mancante", brand: "Errore", priceEstimate: 0 };
-
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
@@ -76,7 +67,7 @@ export const identifyProductByCode = async (code: string): Promise<{ description
       }
     });
 
-     const jsonText = response.text;
+    const jsonText = response.text;
     if (!jsonText) throw new Error("No response");
     return JSON.parse(jsonText);
   } catch (error) {
